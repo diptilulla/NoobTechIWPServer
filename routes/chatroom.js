@@ -1,5 +1,7 @@
 import express from "express";
 import Chatroom from "../models/chatroom.js";
+import Task from "../models/task.js";
+import Message from "../models/message.js";
 
 import mong from "mongodb";
 import axios from "axios";
@@ -85,23 +87,25 @@ chatroomRouter.post("/getchatroom", async (req, res, next) => {
     return res.json({ success: false, data: err.message });
   }
 });
-// chatroomRouter.post('/deletechatroom', async (req, res, next) => {
-//   try {
-//     const {user_id, profile_id} = req.body;
-//     Profile.findByIdAndDelete(profile_id, (err, profile) => {
-//         if(err)
-//             return res.json({ success: false, data: err.message });
-//     });
-//     Auth.findByIdAndDelete(user_id, (err, user) => {
-//         if(err)
-//             return res.json({ success: false, data: err.message });
-//     });
-//     return res.json({ "success": true });
-//   }
-//   catch (err) {
-//       return res.json({ "success": false, "data": err.message });
-//   }
-// });
+
+chatroomRouter.post("/deletechatroom", async (req, res, next) => {
+  try {
+    const { chatroom_id } = req.body;
+    Task.deleteMany({ chatroom_id }, null, function (err, docs) {
+      if (err) return res.json({ success: false, data: err.message });
+    });
+    Message.deleteMany({ chatroom_id }, null, function (err, docs) {
+      if (err) return res.json({ success: false, data: err.message });
+    });
+    Chatroom.findByIdAndDelete(chatroom_id, (err, chatroom) => {
+      if (err) return res.json({ success: false, data: err.message });
+      console.log(chatroom);
+    });
+    return res.json({ success: true });
+  } catch (err) {
+    return res.json({ success: false, data: err.message });
+  }
+});
 
 chatroomRouter.get("/getallchatrooms", async (req, res, next) => {
   try {
